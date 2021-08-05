@@ -1,0 +1,26 @@
+.splashScreen {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  position: "relative";
+  height: 100%;
+  width: 100wh;
+}
+.logo-cont {
+  margin: 150px 0;
+}
+.dot1 {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+.dot2 {
+  position: absolute;
+  left: 0;
+  top: 30%;
+}
+.dot3 {
+  position: absolute;
+  right: 0;
+  top: 0;
+}

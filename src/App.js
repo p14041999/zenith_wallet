@@ -1,23 +1,19 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import SplashScreen from "./Screens/SplashScreen";
+import WalletCreate from "./Screens/WalletCreate";
+import ImportWallet from "./Screens/ImportWallet";
+import Login from "./Screens/Login";
+import CreateWalletPhrase from "./Screens/CreateWalletPhrase";
+import ConfirmWalletPhrase from "./Screens/ConfirmWalletPhrase";
+import Home from "./Screens/Home";
+import Transfer from "./Screens/Transfer";
+import Transfer2 from "./Screens/Transfer2";
+import Onboard from "./Screens/Onboard";
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Onboard />
     </div>
   );
 }
