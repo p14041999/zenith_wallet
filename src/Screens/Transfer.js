@@ -3,10 +3,94 @@ import barcode from "../assets/barcode.svg";
 import ham from "../assets/ham.svg";
 import TabNav from "./TabNav";
 import qrcode from "../assets/qrcode.svg";
+import QRCode from 'react-qr-code'
+import { UserContext } from "../context/UserContext";
+import Web3 from 'web3';
+import {Transaction as Tx} from '@ethereumjs/tx';
+import Common from "@ethereumjs/common";
 class Transfer extends Component {
+  static contextType = UserContext;
   state = {
     val: "receive",
+    address:'',
+    recepient:'',
+    amount:0,
+    web3:null,
+    balance:0,
+    gasPrice:'0',
+    gasRequired:21000,
+    networkFees:0
   };
+  format(val){
+    let formater = new Intl.NumberFormat('en');
+    return formater.format(val);
+  }
+  async componentDidMount(){
+    let address = this.context.data.addresses[0].address;
+    let web3 = new Web3('https://dataserver-1.zenithchain.co');
+    this.setState({
+      val:this.props.match.params.action,
+      address,
+      web3,
+    })
+    let bal = await web3.eth.getBalance(address);
+    let gasPrice = await web3.eth.getGasPrice();
+    let networkFees = web3.utils.fromWei((Number.parseInt(gasPrice)*this.state.gasRequired).toString())
+    this.setState({
+      balance:web3.utils.fromWei(bal),
+      gasPrice,
+      networkFees
+    });
+  }
+  componentWillUnmount(){
+    this.setState({amount:0,recepient:''});
+  }
+  decToHex = (num)=>{
+    return `0x${Number(num).toString(16)}`;
+  }
+  // 0x2a1505273F8b5b85f9Eb18832404A7DfbA4a7F59
+  sendTransaction = ()=>{
+    let nonce = localStorage.getItem('nonce');
+    if(nonce === undefined || nonce ===null || nonce === NaN){
+      localStorage.setItem('nonce','100');
+      nonce = 100
+    }else{
+      console.log(nonce);
+      nonce = Number.parseInt(nonce);
+    }
+    if(this.state.amount+this.state.networkFees <= this.state.balance && this.state.amount > 0 && this.state.recepient.length === 42){
+      var rawTx = {
+        nonce:this.decToHex(nonce),
+        from:this.context.data.addresses[0].address,
+        gasPrice: this.decToHex(this.state.gasPrice),
+        gasLimit: this.decToHex(this.state.gasRequired),
+        to: this.state.recepient,
+        value: this.decToHex(this.state.web3.utils.toWei(this.state.amount)),
+      }
+      let privateKey = Buffer.from(this.context.data.addresses[0].privateKey,'hex');
+      let common = Common.custom({name:'zenith',chainId:79,networkId:79,defaultHardfork:'london'});
+      
+      var tx = new Tx(rawTx,{common});
+      let signed = tx.sign(privateKey);
+      var serializedTx = signed.serialize();
+      // let signedTx = this.state.web3.accounts.
+
+      console.log(`0x${serializedTx.toString('hex')}`);
+      console.log(tx);
+      let {amount,recepient,networkFees} = this.state;
+      this.props.history.push({
+        pathname: '/send',
+        state: { signedTx: `0x${serializedTx.toString('hex')}`,amount,recepient,networkFees }
+      });
+    }else{
+      alert("Balance Exceeds!");
+    }
+  }
+  copyAddress= ()=>{
+    window.navigator.clipboard.writeText(this.state.address).then(()=>{
+      alert("Copied to clipboard!");
+    })
+  }
   render() {
     return (
       <div>
@@ -66,7 +150,7 @@ class Transfer extends Component {
               Send
             </button>
           </div>
-          {this.state.val == "receive" ? (
+          {this.state.val == "send" ? (
             <div className="receive">
               <div
                 style={{
@@ -85,7 +169,7 @@ class Transfer extends Component {
                       height: "35px",
                     }}
                   >
-                    <input className="input" />
+                    <input className="input" onChange={e=>{this.setState({recepient:e.target.value})}} value={this.state.recepient}/>
                     <img src={barcode} className="px-1" />
                   </div>
                 </div>
@@ -95,16 +179,16 @@ class Transfer extends Component {
                     className="flex-row lightBorder borRad"
                     style={{ alignItems: "center", height: "35px" }}
                   >
-                    <input className="input" />
+                    <input className="input" type="number"  onChange={e=>{this.setState({amount:e.target.value})}} value={this.state.amount} />
                     <span className="text-light px-1">MAX</span>
                   </div>
-                  <p className="text-light">Balance:1.093973ZTC</p>
+                  <p className="text-light">Balance: {this.format(this.state.balance)} ZTC</p>
                 </div>
 
-                <p className="text-light py-4">Network Fee:0.089977ZTC</p>
+                <p className="text-light py-4">Network Fee: {this.state.networkFees} ZTC</p>
               </div>
-              <div style={{ marginLeft: 40, marginTop: -20 }}>
-                <button
+              <div style={{ display:'flex',justifyContent:'center' }}>
+                {/* <button
                   className="text-light lightBorder"
                   style={{
                     backgroundColor: "transparent",
@@ -116,7 +200,7 @@ class Transfer extends Component {
                   }}
                 >
                   Cancel
-                </button>
+                </button> */}
 
                 <button
                   className="text-light "
@@ -127,8 +211,10 @@ class Transfer extends Component {
                     padding: 10,
                     paddingLeft: 30,
                     paddingRight: 30,
-                    marginLeft: 20,
+                    // marginLeft: 20,
+                    width:'100%'
                   }}
+                  onClick={this.sendTransaction}
                 >
                   Confirm
                 </button>
@@ -136,21 +222,24 @@ class Transfer extends Component {
             </div>
           ) : null}
 
-          {this.state.val == "send" ? (
+          {this.state.val == "receive" ? (
             <div className="send py-3">
-              <img src={qrcode} />
+              {/* <img src={qrcode} /> */}
+              <div style={{backgroundColor:'#ffffff',padding:'10px'}}>
+                <QRCode value={this.state.address} />
+              </div>
               <p className="text-light lightBack text-center borRad py-1">
-                f2e3Fedaf....af2e3Feda
+                {`${this.state.address.substr(0,6)}...${this.state.address.substr(this.state.address.length-4,4)}`}
               </p>
-              <div className="flex-row">
-                <span className="text-info">Tap to copy</span>
-                <span className="text-info">Share QR</span>
+              <div className="flex-row" style={{justifyContent:'center'}}>
+                <span className="text-info" onClick={this.copyAddress}>Tap to copy</span>
+                {/* <span className="text-info">Share QR</span> */}
               </div>
             </div>
           ) : null}
         </div>
 
-        <TabNav />
+        <TabNav active="transfer" />
       </div>
     );
   }

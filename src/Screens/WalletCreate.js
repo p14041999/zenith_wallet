@@ -5,6 +5,12 @@ import logo from "../assets/logo.svg";
 import "../Styles/WalletCreate.css";
 
 class WalletCreate extends Component {
+  createWallet = ()=>{
+    this.props.history.push('create-wallet-phrase');
+  }
+  importWallet = ()=>{
+    this.props.history.push('import-wallet');
+  }
   render() {
     return (
       <div className="walletCreate">
@@ -15,8 +21,8 @@ class WalletCreate extends Component {
           <h3 className="text-light p-big font-rubik">Zenith Wallet</h3>
         </div>
         <div className="btn-cont-cre flex-col-center">
-          <button className="create-btn">Create New Wallet</button>
-          <button className="importBTn">Import Seed Phrase</button>
+          <button className="create-btn" onClick={this.createWallet}>Create New Wallet</button>
+          <button className="importBTn" onClick={this.importWallet}>Import Seed Phrase</button>
         </div>
       </div>
     );

@@ -3,16 +3,29 @@ import "../Styles/ImportWallet.css";
 import dot5 from "../assets/dot5.svg";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import { AppContext } from "../context/AppContext";
+import { AES } from "crypto-js";
 
-class ImportWallet extends Component {
+class CreatePassword extends Component {
   static contextType = AppContext;
+  state = {
+    password:'',
+    confirmPassword:''
+  }
   goBack=()=>{
-    this.props.history.push('/');
+    this.props.history.push('/confirm-wallet-phrase');
   }
   importWallet = ()=>{
-    localStorage.setItem('created',true);
-    this.context.setCreation(true);
-    this.props.history.push('/');
+    let data = localStorage.getItem('data');
+    if(this.state.password === this.state.password && this.state.password !== ''){
+      let encryptedData = AES.encrypt(data,this.state.password);
+      localStorage.setItem('encryptedData',encryptedData);
+      localStorage.setItem('created',true);
+      this.context.setCreation(true);
+      localStorage.removeItem('data');
+      this.props.history.push('/');
+    }else{
+      alert("Password does\'nt match !");
+    }
   }
   render() {
     return (
@@ -32,24 +45,6 @@ class ImportWallet extends Component {
           }}
         >
           <div>
-            <p className="text-light">Seed Phrase*</p>
-            <input
-              style={{
-                backgroundColor: "#221D3B",
-                borderColor: "white",
-                outline: "none",
-                height: 150,
-                width: "100%",
-                color: "white",
-                fontSize: 18,
-                wordWrap: "break-word",
-                overflowWrap: "break-word",
-                borderRadius: 10,
-              }}
-              autoComplete={false}
-            />
-          </div>
-          <div>
             <p className="text-light">New Password*</p>
             <input
               style={{
@@ -65,7 +60,9 @@ class ImportWallet extends Component {
                 overflowWrap: "break-word",
               }}
               type="password"
-              autoComplete="off"
+              autoComplete="none"
+              onChange={e=>{this.setState({password:e.target.value})}}
+              value={this.state.password}
             />
           </div>
           <div>
@@ -84,6 +81,8 @@ class ImportWallet extends Component {
                 overflowWrap: "break-word",
               }}
               type="Password"
+              onChange={e=>{this.setState({confirmPassword:e.target.value})}}
+              value={this.state.confirmPassword}
             />
           </div>
           <button
@@ -100,4 +99,4 @@ class ImportWallet extends Component {
   }
 }
 
-export default ImportWallet;
+export default CreatePassword;

@@ -5,9 +5,13 @@
 }
 #confirmWalletDiv {
   border: 2px solid white;
-  width: 90%;
-  height: 30vh;
+  width: 95%;
+  height: 300px;
   border-radius: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: center;
 }
 .wall-cont {
   background-color: #221d3b;
@@ -26,13 +30,24 @@
   /* border: 2px solid red; */
   width: 24vw;
   height: 3vh;
-  margin: 9px 4px;
-  padding: 5px 0;
+  margin: 5px 2px;
+  padding: 3px 0;
   border-radius: 7px;
   background-color: #3b3753;
 
   text-align: center;
   color: white;
+}
+.confirmedBox{
+  width: 24vw;
+  height: 3vh;
+  margin: 5px 2px;
+  padding: 3px 0;
+  border-radius: 7px;
+  background-color: #ffffff;
+
+  text-align: center;
+  color: #0a0a0a;
 }
 #btnNext {
   margin: 20px 0;
