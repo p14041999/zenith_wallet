@@ -19,7 +19,8 @@ class Transfer extends Component {
     balance:0,
     gasPrice:'0',
     gasRequired:21000,
-    networkFees:0
+    networkFees:0,
+    nonce:0
   };
   format(val){
     let formater = new Intl.NumberFormat('en');
@@ -33,13 +34,19 @@ class Transfer extends Component {
       address,
       web3,
     })
+    web3.eth.getPastLogs({fromBlock:'0x0',toBlock:'latest',address}).then(console.log).catch(console.log);
+    web3.eth.getPendingTransactions().then(console.log).catch(console.log);
+    web3.eth.getTransaction('0xc06f0b9ddc09b523d6a662d3301b15e008ff627a78b48b9eae913b8b09cb5cab').then(console.log);
+    let nonce = await web3.eth.getTransactionCount(address);
+    console.log(nonce);
     let bal = await web3.eth.getBalance(address);
     let gasPrice = await web3.eth.getGasPrice();
     let networkFees = web3.utils.fromWei((Number.parseInt(gasPrice)*this.state.gasRequired).toString())
     this.setState({
       balance:web3.utils.fromWei(bal),
       gasPrice,
-      networkFees
+      networkFees,
+      nonce
     });
   }
   componentWillUnmount(){
@@ -49,41 +56,55 @@ class Transfer extends Component {
     return `0x${Number(num).toString(16)}`;
   }
   // 0x2a1505273F8b5b85f9Eb18832404A7DfbA4a7F59
-  sendTransaction = ()=>{
+  sendTransaction = async ()=>{
+    let web3 = new Web3('https://dataserver-1.zenithchain.co');
     let nonce = localStorage.getItem('nonce');
     if(nonce === undefined || nonce ===null || nonce === NaN){
-      localStorage.setItem('nonce','100');
-      nonce = 100
+      nonce = this.state.nonce;
+      localStorage.setItem('nonce',nonce.toString());
     }else{
       console.log(nonce);
       nonce = Number.parseInt(nonce);
     }
     if(this.state.amount+this.state.networkFees <= this.state.balance && this.state.amount > 0 && this.state.recepient.length === 42){
-      var rawTx = {
-        nonce:this.decToHex(nonce),
-        from:this.context.data.addresses[0].address,
-        gasPrice: this.decToHex(this.state.gasPrice),
-        gasLimit: this.decToHex(this.state.gasRequired),
-        to: this.state.recepient,
-        value: this.decToHex(this.state.web3.utils.toWei(this.state.amount)),
-      }
-      let privateKey = Buffer.from(this.context.data.addresses[0].privateKey,'hex');
+      let privateKey = this.context.data.addresses[0].privateKey;
       let common = Common.custom({name:'zenith',chainId:79,networkId:79,defaultHardfork:'london'});
+      // var rawTx = {
+      //   nonce:this.decToHex(nonce+1),
+      //   from:this.context.data.addresses[0].address,
+      //   gasPrice: this.decToHex(this.state.gasPrice),
+      //   gas: this.state.gasRequired,
+      //   to: this.state.recepient,
+      //   chainId:79,
+      //   value: this.decToHex(this.state.web3.utils.toWei(this.state.amount)),
+      // }
       
-      var tx = new Tx(rawTx,{common});
-      let signed = tx.sign(privateKey);
-      var serializedTx = signed.serialize();
+      let signedTx = await web3.eth.accounts.signTransaction({
+        // nonce,
+        from:this.context.data.addresses[0].address,
+        gas:this.state.gasRequired,
+        gasPrice:this.state.gasPrice.toString(),
+        value:web3.utils.toWei(this.state.amount),
+        // common,
+        chainId:79,
+        to:this.state.recepient
+      },privateKey);
+      // var tx = new Tx(rawTx,{common});
+      // let signed = tx.sign(privateKey);
+      // var serializedTx = signed.serialize();
       // let signedTx = this.state.web3.accounts.
 
-      console.log(`0x${serializedTx.toString('hex')}`);
-      console.log(tx);
+      // console.log(`0x${serializedTx.toString('hex')}`);
+      // console.log(tx);
       let {amount,recepient,networkFees} = this.state;
       this.props.history.push({
         pathname: '/send',
-        state: { signedTx: `0x${serializedTx.toString('hex')}`,amount,recepient,networkFees }
+        state: { signedTx: JSON.stringify(signedTx),amount,recepient,networkFees,nonce }
       });
+      // localStorage.setItem('nonce','100');
     }else{
       alert("Balance Exceeds!");
+      // 0x5f60806307d1fDc053396163009DB4C4A9d4af79
     }
   }
   copyAddress= ()=>{
@@ -104,7 +125,7 @@ class Transfer extends Component {
           style={{ alignItems: "center" }}
         >
           <p className="text-light">Select Asset</p>
-          <span className="lightBack text-light px-3 py-3 borRad">ZTC</span>
+          <span className="lightBack text-light px-3 py-3 borRad">ZENITH</span>
         </div>
         <div
           style={{ margin: 10, padding: 10 }}
@@ -182,10 +203,10 @@ class Transfer extends Component {
                     <input className="input" type="number"  onChange={e=>{this.setState({amount:e.target.value})}} value={this.state.amount} />
                     <span className="text-light px-1">MAX</span>
                   </div>
-                  <p className="text-light">Balance: {this.format(this.state.balance)} ZTC</p>
+                  <p className="text-light">Balance: {this.format(this.state.balance)} ZENITH</p>
                 </div>
 
-                <p className="text-light py-4">Network Fee: {this.state.networkFees} ZTC</p>
+                <p className="text-light py-4">Network Fee: {this.state.networkFees} ZENITH</p>
               </div>
               <div style={{ display:'flex',justifyContent:'center' }}>
                 {/* <button

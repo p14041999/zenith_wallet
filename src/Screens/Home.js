@@ -13,11 +13,19 @@ class Home extends Component {
   static contextType = UserContext;
   state={
     balance:0,
+    logs:[]
   }
   async componentDidMount(){
     let web3 = new Web3('https://dataserver-1.zenithchain.co');
     let bal = await web3.eth.getBalance(this.context.data.addresses[0].address);
+    let logs = localStorage.getItem('log');
+    console.log(logs);
+    if(logs !== undefined && logs !== '' && logs !== null){
+      let txLog = JSON.parse(logs);
+      this.setState({logs:txLog});
+    }
     this.setState({balance:web3.utils.fromWei(bal)});
+
   }
   format = (val)=>{
     let fomatter = new Intl.NumberFormat('en');
@@ -28,6 +36,49 @@ class Home extends Component {
   }
   toReceive = ()=>{
     this.props.history.push('/transfer/receive');
+  }
+  getDate =(number)=>{
+    let data = new Date(number);
+    let mnth = 'Jan'
+    switch(data.getUTCMonth()){
+      case 0:
+        mnth = 'Jan';
+        break;
+      case 1:
+        mnth = 'Feb';
+        break;
+      case 2:
+        mnth = 'Mar';
+        break;
+      case 3:
+        mnth = 'Apr';
+        break;
+      case 4:
+        mnth = 'May';
+        break;
+      case 5:
+        mnth = 'Jun';
+        break;
+      case 6:
+        mnth = 'Jul';
+        break;
+      case 7:
+        mnth = 'Aug';
+        break;
+      case 8:
+        mnth = 'Sep';
+        break;
+      case 9:
+        mnth = 'Oct';
+        break;
+      case 10:
+        mnth = 'Nov';
+        break;
+      case 11:
+        mnth = 'Dec';
+        break;
+    }
+    return `${data.getDate()}  ${mnth}  ${data.getFullYear()}`;
   }
   render() {
     return (
@@ -40,7 +91,7 @@ class Home extends Component {
         <div className="darkBack  px-2 mx-3 my-2 borRad flex-row">
           <div className="flex-row-center">
             <img className="px-1" src={logo} />
-            <h2 className="text-light">ZTC</h2>
+            <h2 className="text-light">ZENITH</h2>
           </div>
           <div>
             <p className="text-light">BALANCE</p>
@@ -63,15 +114,17 @@ class Home extends Component {
         <div>
           <p className="px-2 text-light">All Transactions</p>
           <div className="homeCont">
-{/*             
-            <div className="homeCard">
+            {this.state.logs.map((item,idx)=>{
+              return (<div className="homeCard">
               <div>
-                <h5 className="text-light">Contract Interaction</h5>
-                <span className="text-light">0.00042</span>
-                <span className="text-light">($0.003)</span>
+                <h5 className="text-light">{item.type}</h5>
+                <span className="text-light">{(Number.parseFloat(item.amount) + Number.parseFloat(item.networkFees))}</span>
+                <span className="text-light">(${(Number.parseFloat(item.amount) + Number.parseFloat(item.networkFees))*1.8})</span>
               </div>
-              <p className="text-light">24 Jun 21</p>
-            </div> */}
+              <p className="text-light">{this.getDate(item.timestamp)}</p>
+            </div>)
+            })}
+            
           </div>
         </div>
         <TabNav active="home" />
