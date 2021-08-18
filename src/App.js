@@ -8,6 +8,8 @@ import CreateWalletPhrase from "./Screens/CreateWalletPhrase";
 import ConfirmWalletPhrase from "./Screens/ConfirmWalletPhrase";
 import Home from "./Screens/Home";
 import Transfer from "./Screens/Transfer";
+import Details from './Screens/Details';
+import Settings from './Screens/Settings';
 import Transfer2 from "./Screens/Transfer2";
 import Onboard from "./Screens/Onboard";
 // import {} from UserContext
@@ -123,7 +125,9 @@ class App extends Component {
                 <Route component={Home} path="/" exact />
                 <Route component={Login} path="/login" />
                 <Route component={Transfer} path="/transfer/:action" />
+                <Route component={Details} path="/details/:id" />
                 <Route component={Transfer2} path="/send" />
+                <Route component={Settings} path="/settings" />
               </Switch>
              </>}
              

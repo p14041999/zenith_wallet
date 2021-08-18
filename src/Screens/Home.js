@@ -115,7 +115,9 @@ class Home extends Component {
           <p className="px-2 text-light">All Transactions</p>
           <div className="homeCont">
             {this.state.logs.map((item,idx)=>{
-              return (<div className="homeCard">
+              return (<div className="homeCard" onClick={e=>{
+                this.props.history.push(`/details/${idx}`);
+              }}>
               <div>
                 <h5 className="text-light">{item.type}</h5>
                 <span className="text-light">{(Number.parseFloat(item.amount) + Number.parseFloat(item.networkFees))}</span>

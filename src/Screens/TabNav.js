@@ -34,12 +34,13 @@ class TabNav extends Component {
         </svg>
           <p>Buy/Sell</p>
         </div>
+        <Link to="/settings">
         <div className={this.props.active==="security"?"flex-col-center text-light":"flex-col-center laxun"}>
-        <svg width="18" height="22" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M9 21C9 21 17 17 17 11V4L9 1L1 4V11C1 17 9 21 9 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+          <svg width="18" height="22" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 21C9 21 17 17 17 11V4L9 1L1 4V11C1 17 9 21 9 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
           <p>Security</p>
-        </div>
+        </div></Link>
       </div>
     );
   }
