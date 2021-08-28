@@ -15,9 +15,14 @@ import Onboard from "./Screens/Onboard";
 // import {} from UserContext
 import { UserContext } from "./context/UserContext";
 import { AppContext } from "./context/AppContext";
-import {BrowserRouter as Router, Route, Switch} from 'react-router-dom';
+import {BrowserRouter as Router, Route, Switch, Redirect} from 'react-router-dom';
 import CreatePassword from "./Screens/CreatePassword";
 import { AES } from "crypto-js";
+function RedirectHome(){
+  return(
+    <Redirect to="/" />
+  )
+}
 class App extends Component {
   state = {
     data:{},
@@ -105,6 +110,7 @@ class App extends Component {
              {!this.state.isOnboarded?<>
               <Switch>
               <Route component={Onboard} path="/" exact/>
+              <Route component={RedirectHome} path="**"/>
               </Switch>
              </>:<>
              {!this.state.isCreated?<>
@@ -114,11 +120,13 @@ class App extends Component {
                 <Route component={CreateWalletPhrase} path="/create-wallet-phrase" />
                 <Route component={ImportWallet} path="/import-wallet" />
                 <Route component={CreatePassword} path="/create-password" />
+                <Route component={RedirectHome} path="**"/>
               </Switch>
              </>:<>
              {!this.state.isLoggedIn?<>
               <Switch>
-              <Route component={Login} path="/"/>
+                <Route component={Login} path="/" exact/>
+                <Route component={RedirectHome} path="**"/>
               </Switch>
              </>:<>
               <Switch>
@@ -128,6 +136,7 @@ class App extends Component {
                 <Route component={Details} path="/details/:id" />
                 <Route component={Transfer2} path="/send" />
                 <Route component={Settings} path="/settings" />
+                <Route component={RedirectHome} path="**"/>
               </Switch>
              </>}
              

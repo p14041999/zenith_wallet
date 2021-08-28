@@ -3,16 +3,50 @@ import "../Styles/ImportWallet.css";
 import dot5 from "../assets/dot5.svg";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import { AppContext } from "../context/AppContext";
-
+// import { mnemonicToSeedSync } from "bip39";
+import hdKey from 'hdkey';
+import { mnemonicToSeedSync } from "bip39";
+import {privateToPublic, publicToAddress, toChecksumAddress} from 'ethereumjs-util';
+import {AES} from 'crypto-js';
 class ImportWallet extends Component {
   static contextType = AppContext;
+  state={
+    pass:'',
+    cPass:'',
+    seed:''
+  }
   goBack=()=>{
     this.props.history.push('/');
   }
   importWallet = ()=>{
-    localStorage.setItem('created',true);
-    this.context.setCreation(true);
-    this.props.history.push('/');
+    if(this.state.pass === this.state.cPass && this.state.pass !=""){
+      let seed = this.state.seed;
+      let mnemonicSeed = mnemonicToSeedSync(seed);
+      let root = hdKey.fromMasterSeed(mnemonicSeed);
+      let masterPrivateKey = root.privateKey.toString('hex');
+      let addrNode = root.derive("m/44'/60'/0'/0/0");
+      let pubKey = privateToPublic(addrNode._privateKey);
+      let Oaddress = publicToAddress(pubKey);
+      let address = toChecksumAddress(`0x${Oaddress.toString('hex')}`);
+
+      let data = {
+        masterPrivateKey:masterPrivateKey,
+        seed,
+        addresses:[
+          {
+            address:address,
+            privateKey:addrNode._privateKey.toString('hex')
+          }
+        ]
+      }
+      let encryptedData = AES.encrypt(JSON.stringify(data),this.state.pass);
+      localStorage.setItem('encryptedData',encryptedData);
+      localStorage.setItem('created',true);
+      this.context.setCreation(true);
+      this.props.history.push('/');
+    }else{
+      alert("Please Enter Valid Password!");
+    }
   }
   render() {
     return (
@@ -47,6 +81,10 @@ class ImportWallet extends Component {
                 borderRadius: 10,
               }}
               autoComplete={false}
+              onChange={(e)=>{
+                this.setState({seed:e.target.value})
+              }}
+              value={this.state.seed}
             />
           </div>
           <div>
@@ -64,6 +102,10 @@ class ImportWallet extends Component {
                 wordWrap: "break-word",
                 overflowWrap: "break-word",
               }}
+              onChange={e=>{
+                this.setState({pass:e.target.value})
+              }}
+              value={this.state.pass}
               type="password"
               autoComplete="off"
             />
@@ -84,6 +126,10 @@ class ImportWallet extends Component {
                 overflowWrap: "break-word",
               }}
               type="Password"
+              value={this.state.cPass}
+              onChange={e=>{
+                this.setState({cPass:e.target.value})
+              }}
             />
           </div>
           <button
